@@ -20,14 +20,13 @@ from utils.model import load_model
 import config as c
 from utils.proposed_mothod import generate_sparse_mask, init_weights, remove_adapter, insert_adapter
 
-
 os.environ["CUDA_VISIBLE_DEVICES"] = c.pusnet_device_ids
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 mkdirs('results/pusnet')
 logger_name = 'pusnet'
 logger_info(logger_name, log_path=os.path.join('results', logger_name, c.mode + '.log'))
 logger = logging.getLogger(logger_name)
-logger.info('#'*50)
+logger.info('#' * 50)
 logger.info('model: pusnet')
 logger.info('train data dir: {:s}'.format(c.train_data_dir))
 logger.info('test data dir: {:s}'.format(c.test_data_dir))
@@ -35,15 +34,14 @@ logger.info('mode: {:s}'.format(c.mode))
 logger.info('noisy level: {:s}'.format(str(c.pusnet_sigma)))
 logger.info('sparse ration: {:s}'.format(str(c.sparse_ratio)))
 
-
 ################## prepare ####################
+model = pusnet()
 model_hiding_seed = pusnet()
 model_recover_seed = pusnet()
 
 # mask generation accoding to random seed '1'
 init_weights(model_hiding_seed, random_seed=1)
 sparse_mask = generate_sparse_mask(model_hiding_seed, sparse_ratio=c.sparse_ratio)
-
 
 for idx in range(len(sparse_mask)):
     sparse_mask[idx] = sparse_mask[idx].to(device)
@@ -52,8 +50,7 @@ for idx in range(len(sparse_mask)):
 init_weights(model_hiding_seed, random_seed=10101)
 init_weights(model_recover_seed, random_seed=1010)
 
-model = pusnet().to(device)
-# init_weights(model)
+model = model.to(device)
 model_hiding_seed = model_hiding_seed.to(device)
 model_recover_seed = model_recover_seed.to(device)
 
@@ -62,46 +59,62 @@ model = nn.DataParallel(model)
 model_hiding_seed = nn.DataParallel(model_hiding_seed)
 model_recover_seed = nn.DataParallel(model_recover_seed)
 
-train_loader, test_loader = load_dataset(c.train_data_dir, c.test_data_dir, c.pusnet_batch_size_train, c.pusnet_batch_size_test, c.pusnet_sigma)
+train_loader, test_loader = load_dataset(c.train_data_dir, c.test_data_dir, c.pusnet_batch_size_train,
+                                         c.pusnet_batch_size_test, c.pusnet_sigma)
 
 if c.mode == 'test':
     model.load_state_dict(torch.load(c.test_pusnet_path))
     # model = nn.DataParallel(model)
 
     with torch.no_grad():
-        S_psnr = []; S_ssim = []; S_mae = []; S_rmse = []
-        R_psnr = []; R_ssim = []; R_mae = []; R_rmse = []
-        N_psnr = []; N_ssim = []; N_mae = []; N_rmse = []
-        DN_psnr = []; DN_ssim = []; DN_mae = []; DN_rmse = []
+        S_psnr = []
+        S_ssim = []
+        S_mae = []
+        S_rmse = []
+        R_psnr = []
+        R_ssim = []
+        R_mae = []
+        R_rmse = []
+        N_psnr = []
+        N_ssim = []
+        N_mae = []
+        N_rmse = []
+        DN_psnr = []
+        DN_ssim = []
+        DN_mae = []
+        DN_rmse = []
 
         model.eval()
         stream = tqdm(test_loader)
         for idx, (data, noised_data) in enumerate(stream):
             data = data.to(device)
             noised_data = noised_data.to(device)
-            
-            secret = data[data.shape[0]//2:]
-            cover = data[:data.shape[0]//2]
+
+            # 将dataloader的图像进行拆分
+            secret = data[data.shape[0] // 2:]
+            cover = data[:data.shape[0] // 2]
             clean = secret
-            noised = noised_data[noised_data.shape[0]//2:]
-    
+            noised = noised_data[noised_data.shape[0] // 2:]
+
             ################## forward ####################
-            remove_adapter(model, sparse_mask)  
-            denoised = model(noised, None, 'denoising') # pusnet-p
-            insert_adapter(model, sparse_mask, model_hiding_seed)  
-            stego = model(secret, cover, 'hiding') # pusnet-E
-            insert_adapter(model, sparse_mask, model_recover_seed, is_sparse=False)  
-            secret_rev = model(stego, None, 'recover') # pusnet-D
+            remove_adapter(model, sparse_mask)
+            denoised = model(noised, None, 'denoising')  # pusnet-p
+            insert_adapter(model, sparse_mask, model_hiding_seed)
+            stego = model(secret, cover, 'hiding')  # pusnet-E
+            insert_adapter(model, sparse_mask, model_recover_seed, is_sparse=False)
+            secret_rev = model(stego, None, 'recover')  # pusnet-D
 
             cover_resi = abs(cover - stego) * c.resi_magnification
             secret_resi = abs(secret - secret_rev) * c.resi_magnification
-            
+
             ############### save images #################
             if c.save_processed_img == True:
-                super_dirs = ['cover', 'secret', 'stego', 'secret_rev', 'cover_resi', 'secret_resi', 'noisy', 'denoised']
+                super_dirs = ['cover', 'secret', 'stego', 'secret_rev', 'cover_resi', 'secret_resi', 'noisy',
+                              'denoised']
                 for cur_dir in super_dirs:
-                    test_data_name = c.test_data_dir.split('/')[-1] # for example, c.test_data_dir = './testdata/coco' ==>  test_data_name = 'coco'
-                    mkdirs(os.path.join('results/pusnet', test_data_name, cur_dir))    
+                    test_data_name = c.test_data_dir.split('/')[
+                        -1]  # for example, c.test_data_dir = './testdata/coco' ==>  test_data_name = 'coco'
+                    mkdirs(os.path.join('results/pusnet', test_data_name, cur_dir))
                 image_name = '%.4d.' % idx + 'png'
                 save_image(cover, os.path.join('results/pusnet', test_data_name, super_dirs[0], image_name))
                 save_image(secret, os.path.join('results/pusnet', test_data_name, super_dirs[1], image_name))
@@ -113,16 +126,17 @@ if c.mode == 'test':
                 save_image(denoised, os.path.join('results/pusnet', test_data_name, super_dirs[7], image_name))
 
             ############### calculate metrics #################
+            # 将转换后的NumPy数组的每个元素乘以255。这通常用于将归一化后的图像数据（通常在0和1之间）转换回原始像素值范围（0到255）。
             secret = secret.detach().cpu().numpy().squeeze() * 255
-            np.clip(secret, 0, 255)
+            np.clip(secret, 0, 255)  # 它用于限制数组 secret 中的值在指定的最小值和最大值之间。具体来说，所有小于 0 的值会被设置为 0，所有大于 255 的值会被设置为 255，而介于 0 和 255 之间的值则保持不变。
             secret_rev = secret_rev.detach().cpu().numpy().squeeze() * 255
             np.clip(secret_rev, 0, 255)
-            
-            cover = cover.detach().cpu().numpy().squeeze() * 255
+
+            cover = cover.detach().cpu().numpy().squeeze() * 255  # squeeze() 方法移除张量中所有单维度条目。如果一个张量的形状是 (1, 2, 3, 1)，那么 squeeze() 之后它的形状会变成 (2, 3).
             np.clip(cover, 0, 255)
             stego = stego.detach().cpu().numpy().squeeze() * 255
             np.clip(stego, 0, 255)
-            
+
             noised = noised.detach().cpu().numpy().squeeze() * 255
             np.clip(noised, 0, 255)
             denoised = denoised.detach().cpu().numpy().squeeze() * 255
@@ -164,10 +178,18 @@ if c.mode == 'test':
             ssim_temp = calculate_ssim(secret, denoised)
             DN_ssim.append(ssim_temp)
 
-        logger.info('testing, stego_avg_psnr: {:.2f}, secret_avg_psnr: {:.2f}, noise_avg_psnr: {:.2f}, denoise_avg_psnr: {:.2f}'.format(np.mean(S_psnr), np.mean(R_psnr), np.mean(N_psnr), np.mean(DN_psnr)))
-        logger.info('testing, stego_avg_ssim: {:.4f}, secret_avg_ssim: {:.4f}, noise_avg_ssim: {:.4f}, denoise_avg_ssim: {:.4f}'.format(np.mean(S_ssim), np.mean(R_ssim), np.mean(N_ssim), np.mean(DN_ssim)))
-        logger.info('testing, stego_avg_mae: {:.2f}, secret_avg_mae: {:.2f}, noise_avg_mae: {:.2f}, denoise_avg_mae: {:.2f}'.format(np.mean(S_mae), np.mean(R_mae), np.mean(N_mae), np.mean(DN_mae)))
-        logger.info('testing, stego_avg_rmse: {:.2f}, secret_avg_rmse: {:.2f}, noise_avg_rmse: {:.2f}, denoise_avg_rmse: {:.2f}'.format(np.mean(S_rmse), np.mean(R_rmse), np.mean(N_rmse), np.mean(DN_rmse)))
+        logger.info(
+            'testing, stego_avg_psnr: {:.2f}, secret_avg_psnr: {:.2f}, noise_avg_psnr: {:.2f}, denoise_avg_psnr: {:.2f}'.format(
+                np.mean(S_psnr), np.mean(R_psnr), np.mean(N_psnr), np.mean(DN_psnr)))
+        logger.info(
+            'testing, stego_avg_ssim: {:.4f}, secret_avg_ssim: {:.4f}, noise_avg_ssim: {:.4f}, denoise_avg_ssim: {:.4f}'.format(
+                np.mean(S_ssim), np.mean(R_ssim), np.mean(N_ssim), np.mean(DN_ssim)))
+        logger.info(
+            'testing, stego_avg_mae: {:.2f}, secret_avg_mae: {:.2f}, noise_avg_mae: {:.2f}, denoise_avg_mae: {:.2f}'.format(
+                np.mean(S_mae), np.mean(R_mae), np.mean(N_mae), np.mean(DN_mae)))
+        logger.info(
+            'testing, stego_avg_rmse: {:.2f}, secret_avg_rmse: {:.2f}, noise_avg_rmse: {:.2f}, denoise_avg_rmse: {:.2f}'.format(
+                np.mean(S_rmse), np.mean(R_rmse), np.mean(N_rmse), np.mean(DN_rmse)))
 
 else:
     secret_recover_loss = nn.MSELoss().to(device)
@@ -183,7 +205,7 @@ else:
         s_loss = []
         r_loss = []
         dn_loss = []
-        loss_history=[]
+        loss_history = []
         ###############################################################
         #                            train                            # 
         ###############################################################
@@ -195,13 +217,14 @@ else:
             data = data.to(device)
             noised_data = noised_data.to(device)
 
-            secret = data[data.shape[0]//2:]
-            cover = data[:data.shape[0]//2]
-            clean = secret
-            noised = noised_data[noised_data.shape[0]//2:]
-            
+            # 将原来的一个batch拆分出来 前一半作为secret图像，后一边作为cover图像
+            secret = data[data.shape[0] // 2:]
+            cover = data[:data.shape[0] // 2]
+            clean = secret  # 将secret作为干净版本的图像
+            noised = noised_data[noised_data.shape[0] // 2:]  # noised图像是和secret是一样的图像，只不过在读取时加入了噪音
+
             ################## forward ####################
-            remove_adapter(model, sparse_mask)
+            remove_adapter(model, sparse_mask)  # 实现模型权重稀疏化
             denoised = model(noised, None, 'denoising')
             insert_adapter(model, sparse_mask, model_hiding_seed)
             stego = model(secret, cover, 'hiding')
@@ -209,10 +232,10 @@ else:
             secret_rev = model(stego, None, 'recover')
 
             ################### loss ######################
-            S_loss = stego_similarity_loss(cover, stego)
-            R_loss = secret_recover_loss(secret, secret_rev)
-            DN_loss = denoising_loss(clean, denoised)
-            loss =  c.pusnet_lambda_S * S_loss + c.pusnet_lambda_R * R_loss + c.pusnet_lambda_DN * DN_loss
+            S_loss = stego_similarity_loss(cover, stego)  # 载密图像相似度损失
+            R_loss = secret_recover_loss(secret, secret_rev)  # 恢复图像损失
+            DN_loss = denoising_loss(clean, denoised)  # 图像降噪损失
+            loss = c.pusnet_lambda_S * S_loss + c.pusnet_lambda_R * R_loss + c.pusnet_lambda_DN * DN_loss
             ################### backword ##################
             loss.backward()
             idx_m = 0
@@ -221,10 +244,10 @@ else:
                     m.weight.grad.data = torch.mul(m.weight.grad.data, sparse_mask[idx_m])
                     idx_m += 1
                 elif isinstance(m, nn.Linear):
-                    m.weight.grad.data = torch.mul(m.weight.grad.data, sparse_mask[len(sparse_mask)-1])
-            optimizer.step()   
+                    m.weight.grad.data = torch.mul(m.weight.grad.data, sparse_mask[len(sparse_mask) - 1])
+            optimizer.step()
             optimizer.zero_grad()
-            
+
             ################## record ##################
             s_loss.append(S_loss.item())
             r_loss.append(R_loss.item())
@@ -253,12 +276,12 @@ else:
                 for (data, noised_data) in test_loader:
                     data = data.to(device)
                     noised_data = noised_data.to(device)
-                    
-                    secret = data[data.shape[0]//2:]
-                    cover = data[:data.shape[0]//2]
+
+                    secret = data[data.shape[0] // 2:]
+                    cover = data[:data.shape[0] // 2]
                     clean = secret
-                    noised = noised_data[noised_data.shape[0]//2:]
-            
+                    noised = noised_data[noised_data.shape[0] // 2:]
+
                     ################## forward ####################
                     remove_adapter(model, sparse_mask)
                     denoised = model(noised, None, 'denoising')
@@ -272,12 +295,12 @@ else:
                     np.clip(secret, 0, 255)
                     secret_rev = secret_rev.detach().cpu().numpy().squeeze() * 255
                     np.clip(secret_rev, 0, 255)
-                    
+
                     cover = cover.detach().cpu().numpy().squeeze() * 255
                     np.clip(cover, 0, 255)
                     stego = stego.detach().cpu().numpy().squeeze() * 255
                     np.clip(stego, 0, 255)
-                    
+
                     noised = noised.detach().cpu().numpy().squeeze() * 255
                     np.clip(noised, 0, 255)
                     denoised = denoised.detach().cpu().numpy().squeeze() * 255
@@ -291,17 +314,16 @@ else:
                     N_psnr.append(psnr_temp)
                     psnr_temp = calculate_psnr(secret, denoised)
                     DN_psnr.append(psnr_temp)
-    
+
                 # logger.info('epoch: {}, training, T_loss: {:.5f}'.format(epoch, epoch_losses))
-                logger.info('epoch: {}, testing, stego_avg_psnr: {:.2f}, secret_avg_psnr: {:.2f}, noise_avg_psnr: {:.2f}, denoise_avg_psnr: {:.2f}'.format(epoch, np.mean(S_psnr), np.mean(R_psnr), np.mean(N_psnr), np.mean(DN_psnr)))
+                logger.info(
+                    'epoch: {}, testing, stego_avg_psnr: {:.2f}, secret_avg_psnr: {:.2f}, noise_avg_psnr: {:.2f}, denoise_avg_psnr: {:.2f}'.format(
+                        epoch, np.mean(S_psnr), np.mean(R_psnr), np.mean(N_psnr), np.mean(DN_psnr)))
 
         if epoch % c.save_freq == 0 and epoch >= (c.save_start_epoch):
             remove_adapter(model, sparse_mask)
-            model_save_dir = os.path.join(c.model_save_dir, 'pusnet-'+ str(c.sparse_ratio))
+            model_save_dir = os.path.join(c.model_save_dir, 'pusnet-' + str(c.sparse_ratio))
             mkdirs(model_save_dir)
             torch.save(model.state_dict(), os.path.join(model_save_dir, 'checkpoint_%.4i' % epoch + '.pt'))
-            
+
         scheduler.step()
-
-
-    

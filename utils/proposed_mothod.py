@@ -15,32 +15,32 @@ from tqdm import tqdm
 #                    sparse mask generation                         #
 #####################################################################
 def generate_sparse_mask(model, sparse_ratio):
-   
     return weight_magnitude_based_sc(model, sparse_ratio, 'lwf')
     
 def weight_magnitude_based_sc(model, sr, sc):
     '''
     weight_magnitude_based_selection_criteria.
     '''
-    compare = torch.gt if sc == 'lwf' else torch.lt
-    sr = sr if sc == 'lwf' else (1-sr)
+    compare = torch.gt if sc == 'lwf' else torch.lt  # torch.gt（大于）或 torch.lt（小于）
+    sr = sr if sc == 'lwf' else (1-sr)  # 选择率
     
     weights_values = torch.Tensor([])
     for k, m in list(model.named_modules()):
         # if isinstance(m, nn.Linear) or (isinstance(m, nn.Conv2d) and 'shortcut' not in k):
-        if isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):
-            weights_values = torch.concat((weights_values, m.weight.data.abs().clone().view(-1)))
+        if isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):  # 判断当前的模块 m 是否是线性层（nn.Linear）或卷积层（nn.Conv2d）
+            # 使用 torch.concat 函数将新展平并克隆的权重张量与已经收集的 weights_values 张量合并。weights_values 在每次迭代中都会更新，以包含到目前为止检查过的所有层的权重。
+            weights_values = torch.concat((weights_values, m.weight.data.abs().clone().view(-1)))  # .view(-1): 这会改变张量的形状，将其展平为一维张量
 
     n = int(len(weights_values)*sr)
-    sorted_values, _ = torch.sort(weights_values, descending=True)
+    sorted_values, _ = torch.sort(weights_values, descending=True)  # 降序
     # sorted_values, _ = torch.sort(weights_values)
-    threshold = sorted_values[n-1]
+    threshold = sorted_values[n-1]  # 将第n个值作为阈值
     sparse_masks = []
     for k, m in list(model.named_modules()):
         # if isinstance(m, nn.Linear) or (isinstance(m, nn.Conv2d) and 'shortcut' not in k):
         if isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):
             weight_copy = m.weight.data.abs().clone()
-            mask = compare(weight_copy, threshold).float()
+            mask = compare(weight_copy, threshold).float()  # mask不是1.就是0.
             sparse_masks.append(mask)  
     return sparse_masks
 
@@ -48,7 +48,7 @@ def weight_magnitude_based_sc(model, sr, sc):
 
 def init_weights(model, random_seed=None):
     if random_seed != None:
-        torch.manual_seed(random_seed)
+        torch.manual_seed(random_seed)            
     for m in model.modules():
         if isinstance(m, nn.Conv2d):
             nn.init.xavier_normal_(m.weight)
@@ -89,16 +89,16 @@ def norm_(grads_list):
 #####################################################################
 def reverse_mask(masks):
     # mask: a list contain several mask of conv or bn layer
-    tmp = copy.deepcopy(masks)
+    tmp = copy.deepcopy(masks)  # 深拷贝确保了对 tmp 的任何修改都不会影响原始的 masks 列表。
     for idx in range(len(masks)):
-        tmp[idx] = 1. - masks[idx]
+        tmp[idx] = 1. - masks[idx]  # 对于 masks 中的每一个掩码，函数使用表达式 1. - masks[idx] 来计算其反转版本。
     return tmp
 
 
 def insert_adapter(model, sparse_mask, model_seed, is_sparse=True):
-    '''
+    """
     model_seed: the model whose weight are initialized according to key(random seed).
-    '''
+    """
     reverse_sparse_mask = reverse_mask(sparse_mask)
     idx_m = 0
     for [m, m_s] in zip(model.modules(), model_seed.modules()):
@@ -115,7 +115,7 @@ def remove_adapter(model, sparse_mask):
     for k, m in list(model.named_modules()):
         # if isinstance(m, nn.Linear) or (isinstance(m, nn.Conv2d) and 'shortcut' not in k):
         if isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):
-            m.weight.data = m.weight.data.mul_(sparse_mask[idx_m])
+            m.weight.data = m.weight.data.mul_(sparse_mask[idx_m])  # 这里的 sparse_mask 通常是一个由0和1组成的张量，用于指示哪些权重应该被保留（值为1）和哪些应该被设置为零（值为0），从而实现模型权重的稀疏化
             idx_m += 1
 
 

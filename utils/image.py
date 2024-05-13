@@ -4,8 +4,10 @@ import math
 import torch.nn as nn
 import torch
 
+
 def quantization(tensor):
-    return torch.round(torch.clamp(tensor*255, min=0., max=255.))/255
+    return torch.round(torch.clamp(tensor * 255, min=0., max=255.)) / 255
+
 
 # def quantization_v2(tensor):
 #     return torch.round(255 * (tensor - tensor.min()) / (tensor.max() - tensor.min()))/255
@@ -35,7 +37,6 @@ def calculate_rmse(img1, img2):
 
 
 def calculate_mae(img1, img2):
-
     img1 = img1.astype(np.float32)
     img2 = img2.astype(np.float32)
     apd = np.mean(np.abs(img1 - img2))
@@ -49,15 +50,15 @@ def calculate_psnr(img1, img2):
     # img1 and img2 have range [0, 255]
     img1 = img1.astype(np.float32)
     img2 = img2.astype(np.float32)
-    mse = np.mean((img1 - img2)**2)
+    mse = np.mean((img1 - img2) ** 2)
     if mse == 0:
         return float('inf')
     return 20 * math.log10(255.0 / math.sqrt(mse))
 
 
 def ssim(img1, img2):
-    C1 = (0.01 * 255)**2
-    C2 = (0.03 * 255)**2
+    C1 = (0.01 * 255) ** 2
+    C2 = (0.03 * 255) ** 2
 
     img1 = img1.astype(np.float32)
     img2 = img2.astype(np.float32)
@@ -66,11 +67,11 @@ def ssim(img1, img2):
 
     mu1 = cv2.filter2D(img1, -1, window)[5:-5, 5:-5]  # valid
     mu2 = cv2.filter2D(img2, -1, window)[5:-5, 5:-5]
-    mu1_sq = mu1**2
-    mu2_sq = mu2**2
+    mu1_sq = mu1 ** 2
+    mu2_sq = mu2 ** 2
     mu1_mu2 = mu1 * mu2
-    sigma1_sq = cv2.filter2D(img1**2, -1, window)[5:-5, 5:-5] - mu1_sq
-    sigma2_sq = cv2.filter2D(img2**2, -1, window)[5:-5, 5:-5] - mu2_sq
+    sigma1_sq = cv2.filter2D(img1 ** 2, -1, window)[5:-5, 5:-5] - mu1_sq
+    sigma2_sq = cv2.filter2D(img2 ** 2, -1, window)[5:-5, 5:-5] - mu2_sq
     sigma12 = cv2.filter2D(img1 * img2, -1, window)[5:-5, 5:-5] - mu1_mu2
 
     ssim_map = ((2 * mu1_mu2 + C1) * (2 * sigma12 + C2)) / ((mu1_sq + mu2_sq + C1) *
@@ -83,6 +84,7 @@ def calculate_ssim(img1, img2):
     the same outputs as MATLAB's
     img1, img2: [0, 255]
     '''
+
     img1 = img1.transpose((1, 2, 0))
     img2 = img2.transpose((1, 2, 0))
 
@@ -103,17 +105,16 @@ def calculate_ssim(img1, img2):
             return ssim(np.squeeze(img1), np.squeeze(img2))
     else:
         raise ValueError('Wrong input image dimensions.')
-    
+
 
 # def calculate_ssim(numpy1, numpy2): # for 4-dim numpy
 #     if numpy1.ndim== 4:
 #         sum = 0
 #         for i in range(numpy1.shape[0]):
 #             sum += calculate_ssim_img(numpy1[i, :, :, :], numpy2[i, :, :, :])
-        
+
 #         return sum/numpy1.shape[0]
 #     return calculate_ssim_img(numpy1, numpy2)
-    
 
 
 class DWT(nn.Module):
@@ -123,10 +124,9 @@ class DWT(nn.Module):
 
     def forward(self, x):
         return dwt_init(x)
-    
+
 
 def dwt_init(x):
-
     x01 = x[:, :, 0::2, :] / 2
     x02 = x[:, :, 1::2, :] / 2
     x1 = x01[:, :, :, 0::2]
@@ -140,17 +140,17 @@ def dwt_init(x):
 
     return torch.cat((x_LL, x_HL, x_LH, x_HH), 1)
 
+
 def iwt_init(x):
     r = 2
     in_batch, in_channel, in_height, in_width = x.size()
-    #print([in_batch, in_channel, in_height, in_width])
+    # print([in_batch, in_channel, in_height, in_width])
     out_batch, out_channel, out_height, out_width = in_batch, int(
         in_channel / (r ** 2)), r * in_height, r * in_width
     x1 = x[:, 0:out_channel, :, :] / 2
     x2 = x[:, out_channel:out_channel * 2, :, :] / 2
     x3 = x[:, out_channel * 2:out_channel * 3, :, :] / 2
     x4 = x[:, out_channel * 3:out_channel * 4, :, :] / 2
-
 
     h = torch.zeros([out_batch, out_channel, out_height, out_width]).float().cuda()
 
@@ -160,6 +160,7 @@ def iwt_init(x):
     h[:, :, 1::2, 1::2] = x1 + x2 + x3 + x4
 
     return h
+
 
 class IWT(nn.Module):
     def __init__(self):

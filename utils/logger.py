@@ -2,7 +2,6 @@ import sys
 import datetime
 import logging
 
-
 '''
 # --------------------------------------------
 # Kai Zhang (github: https://github.com/cszn)
@@ -23,12 +22,13 @@ def log(*args, **kwargs):
 # --------------------------------------------
 '''
 
+
 def beijing(sec, what):
     beijing_time = datetime.datetime.now() + datetime.timedelta(hours=8)
     return beijing_time.timetuple()
 
-logging.Formatter.converter = beijing
 
+logging.Formatter.converter = beijing
 
 
 def logger_info(logger_name, log_path='default_logger.log'):
@@ -41,7 +41,7 @@ def logger_info(logger_name, log_path='default_logger.log'):
     else:
         print('LogHandlers setup!')
         level = logging.INFO
-        
+
         formatter = logging.Formatter('%(asctime)s.%(msecs)03d : %(message)s', datefmt='%y-%m-%d %H:%M:%S')
         fh = logging.FileHandler(log_path, mode='a')
         fh.setFormatter(formatter)

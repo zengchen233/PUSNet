@@ -12,6 +12,7 @@ from PIL import Image
 # sys.path.append(".")
 import config as c
 
+
 class dataset_(Dataset):
     def __init__(self, img_dir, transform, sigma):
         self.img_dir = img_dir
@@ -19,19 +20,19 @@ class dataset_(Dataset):
         self.transform = transform
         self.sigma = sigma
         self.totensor = T.ToTensor()
-    
+
     def __len__(self):
         return len(self.img_filenames)
-    
+
     def __getitem__(self, index):
         img_paths = os.path.join(self.img_dir, self.img_filenames[index])
         img = Image.open(img_paths).convert("RGB")
         img = self.transform(img)
         if self.sigma != None:
-            noised_img = img + torch.randn(img.shape).mul_(self.sigma/255)
+            noised_img = img + torch.randn(img.shape).mul_(self.sigma / 255)  # 生成具有某种随机噪声的图像
             return img, noised_img
         return img
-    
+
 
 transform_train = T.Compose([
     T.RandomCrop(c.crop_size_train),
@@ -48,14 +49,14 @@ transform_val = T.Compose([
 ])
 
 
+# windows中num_workers只能为0，要不然报错
 def load_dataset(train_data_dir, test_data_dir, batchsize_train, batchsize_test, sigma=None):
-
     train_loader = DataLoader(
         dataset_(train_data_dir, transform_train, sigma),
         batch_size=batchsize_train,
         shuffle=True,
         pin_memory=True,
-        num_workers=8,
+        num_workers=0,
         drop_last=True
     )
 
@@ -64,12 +65,11 @@ def load_dataset(train_data_dir, test_data_dir, batchsize_train, batchsize_test,
         batch_size=batchsize_test,
         shuffle=False,
         pin_memory=True,
-        num_workers=2,
+        num_workers=0,
         drop_last=True
     )
 
     return train_loader, test_loader
-
 
 # transform_train = A.Compose(
 #     [
@@ -101,10 +101,10 @@ def load_dataset(train_data_dir, test_data_dir, batchsize_train, batchsize_test,
 #         img = cv2.imread(os.path.join(self.img_dir, img_filename))
 #         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 #         img = np.float32(img/255)
-        
+
 #         if self.transform:
 #             img = self.transform(image=img)["image"]
-            
+
 #         noised_img = img + torch.randn(img.shape).mul_(self.sigma/255)
 
 #         return img, noised_img
@@ -131,6 +131,3 @@ def load_dataset(train_data_dir, test_data_dir, batchsize_train, batchsize_test,
 #     )
 
 #     return train_loader, test_loader
-
-
-    

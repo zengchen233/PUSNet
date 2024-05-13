@@ -1,0 +1,107 @@
+24-04-08 22:38:42.332 : ##################################################
+24-04-08 22:38:42.332 : model: pusnet
+24-04-08 22:38:42.332 : train data dir: dataset/div2k/train
+24-04-08 22:38:42.332 : test data dir: dataset/div2k/test
+24-04-08 22:38:42.332 : mode: test
+24-04-08 22:38:42.332 : noisy level: 20
+24-04-08 22:38:42.332 : sparse ration: 0.9
+24-04-08 22:40:08.995 : testing, stego_avg_psnr: 38.44, secret_avg_psnr: 26.47, noise_avg_psnr: 22.11, denoise_avg_psnr: 32.27
+24-04-08 22:40:08.996 : testing, stego_avg_ssim: 0.9806, secret_avg_ssim: 0.8181, noise_avg_ssim: 0.4431, denoise_avg_ssim: 0.9085
+24-04-08 22:40:08.996 : testing, stego_avg_mae: 2.22, secret_avg_mae: 9.22, noise_avg_mae: 15.96, denoise_avg_mae: 4.56
+24-04-08 22:40:08.996 : testing, stego_avg_rmse: 3.23, secret_avg_rmse: 12.39, noise_avg_rmse: 20.00, denoise_avg_rmse: 6.35
+24-04-10 17:11:27.112 : ##################################################
+24-04-10 17:11:27.113 : model: pusnet
+24-04-10 17:11:27.113 : train data dir: dataset/div2k/train
+24-04-10 17:11:27.113 : test data dir: dataset/div2k/test
+24-04-10 17:11:27.113 : mode: test
+24-04-10 17:11:27.113 : noisy level: 20
+24-04-10 17:11:27.113 : sparse ration: 0.9
+24-04-10 17:11:56.005 : ##################################################
+24-04-10 17:11:56.005 : model: pusnet
+24-04-10 17:11:56.005 : train data dir: dataset/div2k/train
+24-04-10 17:11:56.005 : test data dir: dataset/div2k/test
+24-04-10 17:11:56.005 : mode: test
+24-04-10 17:11:56.005 : noisy level: 20
+24-04-10 17:11:56.005 : sparse ration: 0.9
+24-04-10 17:13:27.054 : ##################################################
+24-04-10 17:13:27.055 : model: pusnet
+24-04-10 17:13:27.055 : train data dir: dataset/div2k/train
+24-04-10 17:13:27.055 : test data dir: dataset/div2k/test
+24-04-10 17:13:27.055 : mode: test
+24-04-10 17:13:27.055 : noisy level: 20
+24-04-10 17:13:27.055 : sparse ration: 0.9
+24-04-10 17:16:30.742 : ##################################################
+24-04-10 17:16:30.742 : model: pusnet
+24-04-10 17:16:30.742 : train data dir: dataset/div2k/train
+24-04-10 17:16:30.742 : test data dir: dataset/div2k/test
+24-04-10 17:16:30.742 : mode: test
+24-04-10 17:16:30.743 : noisy level: 20
+24-04-10 17:16:30.743 : sparse ration: 0.9
+24-04-10 17:20:43.047 : ##################################################
+24-04-10 17:20:43.048 : model: pusnet
+24-04-10 17:20:43.048 : train data dir: dataset/div2k/train
+24-04-10 17:20:43.048 : test data dir: dataset/div2k/test
+24-04-10 17:20:43.048 : mode: test
+24-04-10 17:20:43.048 : noisy level: 20
+24-04-10 17:20:43.048 : sparse ration: 0.9
+24-04-10 17:23:39.979 : ##################################################
+24-04-10 17:23:39.980 : model: pusnet
+24-04-10 17:23:39.980 : train data dir: dataset/div2k/train
+24-04-10 17:23:39.980 : test data dir: dataset/div2k/test
+24-04-10 17:23:39.980 : mode: test
+24-04-10 17:23:39.980 : noisy level: 20
+24-04-10 17:23:39.980 : sparse ration: 0.9
+24-04-10 17:24:36.892 : ##################################################
+24-04-10 17:24:36.892 : model: pusnet
+24-04-10 17:24:36.893 : train data dir: dataset/div2k/train
+24-04-10 17:24:36.893 : test data dir: dataset/div2k/test
+24-04-10 17:24:36.893 : mode: test
+24-04-10 17:24:36.893 : noisy level: 20
+24-04-10 17:24:36.893 : sparse ration: 0.9
+24-04-10 17:27:54.266 : ##################################################
+24-04-10 17:27:54.267 : model: pusnet
+24-04-10 17:27:54.267 : train data dir: dataset/div2k/train
+24-04-10 17:27:54.267 : test data dir: dataset/div2k/test
+24-04-10 17:27:54.267 : mode: test
+24-04-10 17:27:54.267 : noisy level: 20
+24-04-10 17:27:54.267 : sparse ration: 0.9
+24-04-10 17:29:14.600 : ##################################################
+24-04-10 17:29:14.601 : model: pusnet
+24-04-10 17:29:14.601 : train data dir: dataset/div2k/train
+24-04-10 17:29:14.601 : test data dir: dataset/div2k/test
+24-04-10 17:29:14.601 : mode: test
+24-04-10 17:29:14.601 : noisy level: 20
+24-04-10 17:29:14.601 : sparse ration: 0.9
+24-04-10 17:29:29.306 : ##################################################
+24-04-10 17:29:29.306 : model: pusnet
+24-04-10 17:29:29.306 : train data dir: dataset/div2k/train
+24-04-10 17:29:29.307 : test data dir: dataset/div2k/test
+24-04-10 17:29:29.307 : mode: test
+24-04-10 17:29:29.307 : noisy level: 20
+24-04-10 17:29:29.307 : sparse ration: 0.9
+24-04-10 17:29:43.021 : testing, stego_avg_psnr: 37.64, secret_avg_psnr: 25.09, noise_avg_psnr: 22.11, denoise_avg_psnr: 31.10
+24-04-10 17:29:43.021 : testing, stego_avg_ssim: 0.9791, secret_avg_ssim: 0.8149, noise_avg_ssim: 0.4876, denoise_avg_ssim: 0.9033
+24-04-10 17:29:43.022 : testing, stego_avg_mae: 2.43, secret_avg_mae: 11.22, noise_avg_mae: 15.95, denoise_avg_mae: 5.11
+24-04-10 17:29:43.022 : testing, stego_avg_rmse: 3.50, secret_avg_rmse: 15.17, noise_avg_rmse: 20.00, denoise_avg_rmse: 7.24
+24-04-10 17:30:03.528 : ##################################################
+24-04-10 17:30:03.528 : model: pusnet
+24-04-10 17:30:03.528 : train data dir: dataset/div2k/train
+24-04-10 17:30:03.528 : test data dir: dataset/div2k/test
+24-04-10 17:30:03.528 : mode: test
+24-04-10 17:30:03.528 : noisy level: 20
+24-04-10 17:30:03.528 : sparse ration: 0.9
+24-04-10 17:30:16.242 : testing, stego_avg_psnr: 19.53, secret_avg_psnr: 15.68, noise_avg_psnr: 22.11, denoise_avg_psnr: 22.24
+24-04-10 17:30:16.242 : testing, stego_avg_ssim: 0.6599, secret_avg_ssim: 0.5232, noise_avg_ssim: 0.4876, denoise_avg_ssim: 0.5046
+24-04-10 17:30:16.242 : testing, stego_avg_mae: 21.06, secret_avg_mae: 34.96, noise_avg_mae: 15.95, denoise_avg_mae: 15.50
+24-04-10 17:30:16.242 : testing, stego_avg_rmse: 27.35, secret_avg_rmse: 43.78, noise_avg_rmse: 20.00, denoise_avg_rmse: 19.73
+24-04-12 21:53:27.490 : ##################################################
+24-04-12 21:53:27.490 : model: pusnet
+24-04-12 21:53:27.490 : train data dir: dataset/div2k/train
+24-04-12 21:53:27.490 : test data dir: dataset/div2k/test
+24-04-12 21:53:27.490 : mode: test
+24-04-12 21:53:27.490 : noisy level: 20
+24-04-12 21:53:27.490 : sparse ration: 0.9
+24-04-12 21:53:41.511 : testing, stego_avg_psnr: 37.64, secret_avg_psnr: 25.09, noise_avg_psnr: 22.11, denoise_avg_psnr: 31.11
+24-04-12 21:53:41.511 : testing, stego_avg_ssim: 0.9791, secret_avg_ssim: 0.8149, noise_avg_ssim: 0.4874, denoise_avg_ssim: 0.9030
+24-04-12 21:53:41.511 : testing, stego_avg_mae: 2.43, secret_avg_mae: 11.22, noise_avg_mae: 15.95, denoise_avg_mae: 5.11
+24-04-12 21:53:41.511 : testing, stego_avg_rmse: 3.50, secret_avg_rmse: 15.17, noise_avg_rmse: 20.00, denoise_avg_rmse: 7.23
